@@ -31,7 +31,7 @@ class TSFDataLoader:
   """Generate data loader from raw data."""
 
   def __init__(
-      self, data, batch_size, seq_len, pred_len, feature_type, target='OT'
+      self, data, batch_size, seq_len, pred_len, feature_type, target='OT', standardize=False
   ):
     self.data = data
     self.batch_size = batch_size
@@ -88,8 +88,9 @@ class TSFDataLoader:
     test_df = df[val_end - self.seq_len : test_end]
 
     # standardize by training set
-    self.scaler = StandardScaler()
-    self.scaler.fit(train_df.values)
+    if self.standardize:
+      self.scaler = StandardScaler()
+      self.scaler.fit(train_df.values)
 
     def scale_df(df, scaler):
       data = scaler.transform(df.values)
