@@ -92,13 +92,14 @@ class TSFDataLoader:
       self.scaler = StandardScaler()
       self.scaler.fit(train_df.values)
 
-    def scale_df(df, scaler):
-      data = scaler.transform(df.values)
-      return pd.DataFrame(data, index=df.index, columns=df.columns)
+      def scale_df(df, scaler):
+        data = scaler.transform(df.values)
+        return pd.DataFrame(data, index=df.index, columns=df.columns)
 
-    self.train_df = scale_df(train_df, self.scaler)
-    self.val_df = scale_df(val_df, self.scaler)
-    self.test_df = scale_df(test_df, self.scaler)
+      self.train_df = scale_df(train_df, self.scaler)
+      self.val_df = scale_df(val_df, self.scaler)
+      self.test_df = scale_df(test_df, self.scaler)
+      
     self.n_feature = self.train_df.shape[-1]
 
   def _split_window(self, data):
