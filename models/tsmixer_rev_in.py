@@ -15,10 +15,11 @@
 
 """Implementation of TSMixer with Reversible Instance Normalization."""
 
-from models.RevIN import RevNorm
-from models.TSMixer import res_block
+from models.rev_in import RevNorm
+from models.tsmixer import res_block
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow import keras
+from keras import layers
 
 
 def build_model(

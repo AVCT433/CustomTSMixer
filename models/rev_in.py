@@ -16,7 +16,8 @@
 """Implementation of Reversible Instance Normalization."""
 
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow import keras
+from keras import layers
 
 
 class RevNorm(layers.Layer):

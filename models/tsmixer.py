@@ -16,7 +16,8 @@
 """Implementation of TSMixer."""
 
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow import keras
+from keras import layers
 
 
 def res_block(inputs, norm_type, activation, dropout, ff_dim):
