@@ -31,9 +31,11 @@ def res_block(inputs, norm_type, activation, dropout, ff_dim):
 
   # Temporal Linear
   x = norm(axis=[-2, -1])(inputs)
-  x = tf.transpose(x, perm=[0, 2, 1])  # [Batch, Channel, Input Length]
+  # x = tf.transpose(x, perm=[0, 2, 1])  # [Batch, Channel, Input Length]
+  x = layers.Permute((2, 1))(x) # [Batch, Channel, Input Length]
   x = layers.Dense(x.shape[-1], activation=activation)(x)
-  x = tf.transpose(x, perm=[0, 2, 1])  # [Batch, Input Length, Channel]
+  # x = tf.transpose(x, perm=[0, 2, 1])  # [Batch, Input Length, Channel]
+  x = layers.Permute((2, 1))(x) # [Batch, Input Length, Channel]
   x = layers.Dropout(dropout)(x)
   res = x + inputs
 
@@ -68,8 +70,10 @@ def build_model(
   if target_slice:
     x = x[:, :, target_slice]
 
-  x = tf.transpose(x, perm=[0, 2, 1])  # [Batch, Channel, Input Length]
+  # x = tf.transpose(x, perm=[0, 2, 1])  # [Batch, Channel, Input Length]
+  x = layers.Permute((2, 1))(x) # [Batch, Channel, Input Length]
   x = layers.Dense(pred_len)(x)  # [Batch, Channel, Output Length]
-  outputs = tf.transpose(x, perm=[0, 2, 1])  # [Batch, Output Length, Channel])
+  # outputs = tf.transpose(x, perm=[0, 2, 1])  # [Batch, Output Length, Channel])
+  outputs = layers.Permute((2, 1))(x) # [Batch, Output Length, Channel]
 
   return tf.keras.Model(inputs, outputs)

@@ -68,7 +68,7 @@ def parse_args():
   parser.add_argument(
       '--feature_type',
       type=str,
-      default='M',
+      default='MS',
       choices=['S', 'M', 'MS'],
       help=(
           'forecasting task, options:[M, S, MS]; M:multivariate predict'
@@ -77,7 +77,7 @@ def parse_args():
       ),
   )
   parser.add_argument(
-      '--target', type=str, default='OT', help='target feature in S or MS task'
+      '--target', type=str, default='in_bod', help='target feature in S or MS task'
   )
   parser.add_argument(
       '--checkpoint_dir',
@@ -93,10 +93,10 @@ def parse_args():
 
   # forecasting task
   parser.add_argument(
-      '--seq_len', type=int, default=336, help='input sequence length'
+      '--seq_len', type=int, default=5, help='input sequence length'
   )
   parser.add_argument(
-      '--pred_len', type=int, default=96, help='prediction sequence length'
+      '--pred_len', type=int, default=1, help='prediction sequence length'
   )
 
   # model hyperparameter
@@ -118,7 +118,7 @@ def parse_args():
   parser.add_argument(
       '--norm_type',
       type=str,
-      default='B',
+      default='L',
       choices=['L', 'B'],
       help='LayerNorm or BatchNorm',
   )
