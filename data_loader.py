@@ -83,22 +83,22 @@ class TSFDataLoader:
       train_end = int(n * 0.7)
       val_end = n - int(n * 0.2)
       test_end = n
-    train_df = df[:train_end]
-    val_df = df[train_end - self.seq_len : val_end]
-    test_df = df[val_end - self.seq_len : test_end]
+    self.train_df = df[:train_end]
+    self.val_df = df[train_end - self.seq_len : val_end]
+    self.test_df = df[val_end - self.seq_len : test_end]
 
     # standardize by training set
     if self.standardize:
       self.scaler = StandardScaler()
-      self.scaler.fit(train_df.values)
+      self.scaler.fit(self.train_df.values)
 
       def scale_df(df, scaler):
         data = scaler.transform(df.values)
         return pd.DataFrame(data, index=df.index, columns=df.columns)
 
-      self.train_df = scale_df(train_df, self.scaler)
-      self.val_df = scale_df(val_df, self.scaler)
-      self.test_df = scale_df(test_df, self.scaler)
+      self.train_df = scale_df(self.train_df, self.scaler)
+      self.val_df = scale_df(self.val_df, self.scaler)
+      self.test_df = scale_df(self.test_df, self.scaler)
       
     self.n_feature = self.train_df.shape[-1]
 
