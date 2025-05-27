@@ -39,7 +39,7 @@ def parse_args():
   )
 
   # basic config
-  parser.add_argument('--seed', type=int, default=0, help='random seed')
+  parser.add_argument('--seed', type=int, default=None, help='random seed')
   parser.add_argument(
       '--model',
       type=str,
@@ -144,7 +144,7 @@ def parse_args():
       '--num_workers', type=int, default=10, help='data loader num workers'
   )
   parser.add_argument(
-      '--train_epochs', type=int, default=100, help='train epochs'
+      '--train_epochs', type=int, default=1000, help='train epochs'
   )
   parser.add_argument(
       '--batch_size', type=int, default=32, help='batch size of input data'
@@ -161,12 +161,13 @@ def parse_args():
 
   # save results
   parser.add_argument(
-      '--result_path', default='result.csv', help='path to save result'
+      '--result_path', default='results/result.csv', help='path to save result'
   )
 
   args = parser.parse_args()
 
-  tf.keras.utils.set_random_seed(args.seed)
+  if args.seed is not None:
+    tf.keras.utils.set_random_seed(args.seed)
 
   return args
 
@@ -223,8 +224,8 @@ def main():
     raise ValueError(f'Model not supported: {args.model}')
 
   optimizer = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
-  model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
-  checkpoint_path = os.path.join(args.checkpoint_dir, f'{exp_id}_best')
+  model.compile(optimizer=optimizer, loss='mse', metrics=['root_mean_squared_error'])
+  checkpoint_path = os.path.join(args.checkpoint_dir, f'{exp_id}_best.weights.h5')
   checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
       filepath=checkpoint_path,
       verbose=1,
@@ -261,11 +262,11 @@ def main():
       'pred_len': [args.pred_len],
       'lr': [args.learning_rate],
       'mse': [test_result[0]],
-      'mae': [test_result[1]],
+      'rmse': [test_result[1]],
       'val_mse': [history.history['val_loss'][best_epoch]],
-      'val_mae': [history.history['val_mae'][best_epoch]],
+      'val_rmse': [history.history['val_root_mean_squared_error'][best_epoch]],
       'train_mse': [history.history['loss'][best_epoch]],
-      'train_mae': [history.history['mae'][best_epoch]],
+      'train_rmse': [history.history['root_mean_squared_error'][best_epoch]],
       'training_time': elasped_training_time,
       'norm_type': args.norm_type,
       'activation': args.activation,
