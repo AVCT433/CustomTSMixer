@@ -51,7 +51,7 @@ def parse_args():
   parser.add_argument(
       '--data',
       type=str,
-      default='weather',
+      default='historical_cod',
     #   choices=[
     #       'electricity',
     #       'exchange_rate',
