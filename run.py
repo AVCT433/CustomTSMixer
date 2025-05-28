@@ -52,17 +52,17 @@ def parse_args():
       '--data',
       type=str,
       default='weather',
-      choices=[
-          'electricity',
-          'exchange_rate',
-          'national_illness',
-          'traffic',
-          'weather',
-          'ETTm1',
-          'ETTm2',
-          'ETTh1',
-          'ETTh2',
-      ],
+    #   choices=[
+    #       'electricity',
+    #       'exchange_rate',
+    #       'national_illness',
+    #       'traffic',
+    #       'weather',
+    #       'ETTm1',
+    #       'ETTm2',
+    #       'ETTh1',
+    #       'ETTh2',
+    #   ],
       help='data name',
   )
   parser.add_argument(
@@ -161,7 +161,7 @@ def parse_args():
 
   # save results
   parser.add_argument(
-      '--result_path', default='results/result.csv', help='path to save result'
+      '--result_path', default='results', help='path to save result'
   )
 
   args = parser.parse_args()
@@ -182,6 +182,8 @@ def main():
     exp_id = f'{args.data}_{args.feature_type}_{args.model}_sl{args.seq_len}_pl{args.pred_len}_lr{args.learning_rate}_ks{args.kernel_size}'
   else:
     raise ValueError(f'Unknown model type: {args.model}')
+
+  csv_path = os.path.join(args.result_path, f"{exp_id}.csv")
 
   # load datasets
   data_loader = TSFDataLoader(
@@ -277,10 +279,14 @@ def main():
     data['ff_dim'] = args.ff_dim
 
   df = pd.DataFrame(data)
-  if os.path.exists(args.result_path):
-    df.to_csv(args.result_path, mode='a', index=False, header=False)
+  if not os.path.exists(args.result_path):
+    os.makedirs(args.result_path)
+  
+  if os.path.exists(csv_path):
+    # df.to_csv(csv_path, mode='a', index=False, header=False)
+    raise FileExistsError(f"'{csv_path}' 파일이 이미 존재합니다.")
   else:
-    df.to_csv(args.result_path, mode='w', index=False, header=True)
+    df.to_csv(csv_path, mode='w', index=False, header=True)
 
 
 if __name__ == '__main__':
