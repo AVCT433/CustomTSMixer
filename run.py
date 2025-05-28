@@ -26,6 +26,7 @@ import models
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from keras import backend as K
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
 logging.getLogger('tensorflow').setLevel(logging.FATAL)
@@ -93,7 +94,7 @@ def parse_args():
 
   # forecasting task
   parser.add_argument(
-      '--seq_len', type=int, default=5, help='input sequence length'
+      '--seq_len', type=int, default=10, help='input sequence length'
   )
   parser.add_argument(
       '--pred_len', type=int, default=1, help='prediction sequence length'
@@ -109,7 +110,7 @@ def parse_args():
   parser.add_argument(
       '--ff_dim',
       type=int,
-      default=2048,
+      default=10,
       help='fully-connected feature dimension',
   )
   parser.add_argument(
@@ -129,22 +130,26 @@ def parse_args():
       choices=['relu', 'gelu'],
       help='Activation function',
   )
+  # 안 쓰임
   parser.add_argument(
       '--kernel_size', type=int, default=4, help='kernel size for CNN'
   )
+  # 안 쓰임
   parser.add_argument(
       '--temporal_dim', type=int, default=16, help='temporal feature dimension'
   )
+  # 안 쓰임
   parser.add_argument(
       '--hidden_dim', type=int, default=64, help='hidden feature dimension'
   )
 
   # optimization
+  # 안 쓰임
   parser.add_argument(
       '--num_workers', type=int, default=10, help='data loader num workers'
   )
   parser.add_argument(
-      '--train_epochs', type=int, default=1000, help='train epochs'
+      '--train_epochs', type=int, default=100, help='train epochs'
   )
   parser.add_argument(
       '--batch_size', type=int, default=32, help='batch size of input data'
@@ -171,6 +176,16 @@ def parse_args():
 
   return args
 
+def r2_keras(y_true, y_pred):
+#   SS_res = K.sum(K.square(y_true - y_pred))
+#   SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
+#   return 1 - SS_res / (SS_tot + K.epsilon())
+  # 잔차 제곱합 (SS_res)
+  SS_res = tf.reduce_sum(tf.square(y_true - y_pred))
+  # 전체 제곱합 (SS_tot)
+  SS_tot = tf.reduce_sum(tf.square(y_true - tf.reduce_mean(y_true)))
+  # 결정계수 반환
+  return 1 - SS_res / (SS_tot + tf.keras.backend.epsilon())
 
 def main():
   args = parse_args()
@@ -226,7 +241,7 @@ def main():
     raise ValueError(f'Model not supported: {args.model}')
 
   optimizer = tf.keras.optimizers.Adam(learning_rate=args.learning_rate)
-  model.compile(optimizer=optimizer, loss='mse', metrics=['root_mean_squared_error'])
+  model.compile(optimizer=optimizer, loss='mse', metrics=['root_mean_squared_error', r2_keras])
   checkpoint_path = os.path.join(args.checkpoint_dir, f'{exp_id}_best.weights.h5')
   checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
       filepath=checkpoint_path,
@@ -265,17 +280,20 @@ def main():
       'lr': [args.learning_rate],
       'mse': [test_result[0]],
       'rmse': [test_result[1]],
+      'r2': [test_result[2]],
       'val_mse': [history.history['val_loss'][best_epoch]],
       'val_rmse': [history.history['val_root_mean_squared_error'][best_epoch]],
+      'val_r2': [history.history['val_r2_keras'][best_epoch]],
       'train_mse': [history.history['loss'][best_epoch]],
       'train_rmse': [history.history['root_mean_squared_error'][best_epoch]],
+      'train_r2': [history.history['r2_keras'][best_epoch]],
       'training_time': elasped_training_time,
       'norm_type': args.norm_type,
       'activation': args.activation,
       'n_block': args.n_block,
       'dropout': args.dropout,
   }
-  if 'TSMixer' in args.model:
+  if 'tsmixer' in args.model:
     data['ff_dim'] = args.ff_dim
 
   df = pd.DataFrame(data)
@@ -283,8 +301,8 @@ def main():
     os.makedirs(args.result_path)
   
   if os.path.exists(csv_path):
-    # df.to_csv(csv_path, mode='a', index=False, header=False)
-    raise FileExistsError(f"'{csv_path}' 파일이 이미 존재합니다.")
+    df.to_csv(csv_path, mode='a', index=False, header=False)
+    # raise FileExistsError(f"'{csv_path}' 파일이 이미 존재합니다.")
   else:
     df.to_csv(csv_path, mode='w', index=False, header=True)
 
