@@ -23,10 +23,12 @@ import time
 
 from data_loader import TSFDataLoader
 import models
+from metrics import r2_keras
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-from keras import backend as K
+from scikeras.wrappers import KerasRegressor
+from sklearn.model_selection import GridSearchCV
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
 logging.getLogger('tensorflow').setLevel(logging.FATAL)
@@ -94,7 +96,7 @@ def parse_args():
 
   # forecasting task
   parser.add_argument(
-      '--seq_len', type=int, default=10, help='input sequence length'
+      '--seq_len', type=int, default=15, help='input sequence length'
   )
   parser.add_argument(
       '--pred_len', type=int, default=1, help='prediction sequence length'
@@ -149,7 +151,7 @@ def parse_args():
       '--num_workers', type=int, default=10, help='data loader num workers'
   )
   parser.add_argument(
-      '--train_epochs', type=int, default=100, help='train epochs'
+      '--train_epochs', type=int, default=150, help='train epochs'
   )
   parser.add_argument(
       '--batch_size', type=int, default=32, help='batch size of input data'
@@ -175,17 +177,6 @@ def parse_args():
     tf.keras.utils.set_random_seed(args.seed)
 
   return args
-
-def r2_keras(y_true, y_pred):
-#   SS_res = K.sum(K.square(y_true - y_pred))
-#   SS_tot = K.sum(K.square(y_true - K.mean(y_true)))
-#   return 1 - SS_res / (SS_tot + K.epsilon())
-  # 잔차 제곱합 (SS_res)
-  SS_res = tf.reduce_sum(tf.square(y_true - y_pred))
-  # 전체 제곱합 (SS_tot)
-  SS_tot = tf.reduce_sum(tf.square(y_true - tf.reduce_mean(y_true)))
-  # 결정계수 반환
-  return 1 - SS_res / (SS_tot + tf.keras.backend.epsilon())
 
 def main():
   args = parse_args()
