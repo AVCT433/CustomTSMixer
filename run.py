@@ -170,9 +170,13 @@ def parse_args():
   parser.add_argument(
       '--result_path', default='results', help='path to save result'
   )
+  parser.add_argument(
+      '--single_result_csv',
+      action='store_true',
+      help='If set, save all experiment results into a single CSV file.',
+  )
 
   args = parser.parse_args()
-
   if args.seed is not None:
     tf.keras.utils.set_random_seed(args.seed)
 
@@ -189,7 +193,11 @@ def main():
   else:
     raise ValueError(f'Unknown model type: {args.model}')
 
-  csv_path = os.path.join(args.result_path, f"{exp_id}.csv")
+  # 결과 파일 경로 결정
+  if args.single_result_csv:
+    csv_path = os.path.join(args.result_path, "all_results.csv")
+  else:
+    csv_path = os.path.join(args.result_path, f"{exp_id}.csv")
 
   # load datasets
   data_loader = TSFDataLoader(
