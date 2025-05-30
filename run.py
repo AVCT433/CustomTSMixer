@@ -182,8 +182,12 @@ def parse_args():
 
   return args
 
-def main():
-  args = parse_args()
+def run_experiment(args, param_dict=None):
+  # 하이퍼파라미터 덮어쓰기 (param_dict가 주어지면)
+  if param_dict:
+    for k, v in param_dict.items():
+      setattr(args, k, v)
+
   if 'tsmixer' in args.model:
     exp_id = f'{args.data}_{args.feature_type}_{args.model}_sl{args.seq_len}_pl{args.pred_len}_lr{args.learning_rate}_nt{args.norm_type}_{args.activation}_nb{args.n_block}_dp{args.dropout}_fd{args.ff_dim}'
   elif args.model == 'full_linear':
@@ -305,6 +309,20 @@ def main():
   else:
     df.to_csv(csv_path, mode='w', index=False, header=True)
 
+def main():
+  args = parse_args()
+
+  # 실험할 하이퍼파라미터 조합 정의 (예시)
+  param_grid = [
+    {'n_block': n, 'ff_dim': f, 'dropout': d}
+    for n in [1, 2]
+    for f in [8, 16]
+    for d in [0.05, 0.1]
+  ]
+
+  for param_dict in param_grid:
+    print(f"실험 파라미터: {param_dict}")
+    run_experiment(args, param_dict)
 
 if __name__ == '__main__':
   main()
